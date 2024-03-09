@@ -1,7 +1,8 @@
 DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
     id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-    username varchar(31),
-    password varchar(31),
-    message varchar(255)
+    username VARCHAR(32),
+    password CHAR(64),
+    message VARCHAR(256)
 );
+ALTER TABLE `users` ADD UNIQUE (username);

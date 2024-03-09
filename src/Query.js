@@ -2,7 +2,7 @@ import axios from "axios";
 import { useState } from "react";
 
 export default function Query() {
-    let [queryText, setQueryText] = useState("");
+    const [queryText, setQueryText] = useState("");
 
     const click = () => {
         axios.get("http://localhost:8080/codes/1")

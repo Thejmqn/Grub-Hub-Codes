@@ -1,6 +1,7 @@
 import './App.css';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import Restaurant from './Restaurant';
+import Login from './Login';
 
 const router = createBrowserRouter([
   {
@@ -9,27 +10,33 @@ const router = createBrowserRouter([
     errorElement: <Error />,
   },
   {
-    path: "/chic-fil-a",
-    element: <Restaurant name={"Chic-Fil-A"} />
+    path: "/login",
+    element: <Login />,
   },
   {
-    path: "/west-range",
-    element: <Restaurant name={"West Range Café"} />
+    path: "/restaurants/chic-fil-a",
+    element: <Restaurant name={"Chic-Fil-A"} />,
   },
   {
-    path: "/rising-roll",
-    element: <Restaurant name={"Rising Roll"} />
+    path: "/restaurants/west-range",
+    element: <Restaurant name={"West Range Café"} />,
+  },
+  {
+    path: "/restaurants/rising-roll",
+    element: <Restaurant name={"Rising Roll"} />,
   },
 ]);
 
 function Home() {
   return (
   <div className="Home">
+    <p>Login:</p>
+    <a href={`/login`}>Login/Signup</a>
     <p>Restaurants:</p>
     <ul>
-      <li><a href={`/chic-fil-a`}>Chic-Fil-A</a></li>
-      <li><a href={`/west-range`}>West Range Café</a></li>
-      <li><a href={`/rising-roll`}>Rising Roll</a></li>
+      <li><a href={`/restaurants/chic-fil-a`}>Chic-Fil-A</a></li>
+      <li><a href={`/restaurants/west-range`}>West Range Café</a></li>
+      <li><a href={`/restaurants/rising-roll`}>Rising Roll</a></li>
     </ul>
   </div>
   );

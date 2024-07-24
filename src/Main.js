@@ -15,15 +15,15 @@ const router = createBrowserRouter([
   },
   {
     path: "/restaurants/chic-fil-a",
-    element: <Restaurant name={"Chic-Fil-A"} />,
+    element: <Restaurant name={"Chic-Fil-A"} id={1}/>,
   },
   {
     path: "/restaurants/west-range",
-    element: <Restaurant name={"West Range Café"} />,
+    element: <Restaurant name={"West Range Café"} id={2}/>,
   },
   {
     path: "/restaurants/rising-roll",
-    element: <Restaurant name={"Rising Roll"} />,
+    element: <Restaurant name={"Rising Roll"} id={3}/>,
   },
 ]);
 

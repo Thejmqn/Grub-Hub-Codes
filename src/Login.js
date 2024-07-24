@@ -47,6 +47,7 @@ export default function Login() {
                 positive: true,
                 message: "Successfully logged in.",
             }});
+            sessionLogin(username);
         })
         .catch(err => {
             if (err.response.status === 400) {
@@ -96,6 +97,7 @@ export default function Login() {
                 positive: true,
                 message: "Successfully created account.",
             }});
+            sessionLogin(username);
         })
         .catch(err => {
             if (err.response.status === 400) {
@@ -116,20 +118,24 @@ export default function Login() {
 
     const handleLogin = e => {
         e.preventDefault();
-        sessionStorage.setItem("isLoggedIn", "true");
         submitLogin(login.username, login.password)
         console.log("asdasdsd")
     }
 
     const handleSignup = e => {
         e.preventDefault();
-        sessionStorage.setItem("isLoggedIn", "true");
         submitSignup(signup.username, signup.password, signup.confirmPassword);
         console.log("asdasdsd")
     }
 
+    const sessionLogin = (username) => {
+        sessionStorage.setItem("loggedIn", "true");
+        sessionStorage.setItem("username", username);
+    }
+
     return (
     <div className="loginPage">
+        <a href="/">Return Home</a>
         <div className="login">
             <h1>Login</h1>
             <p>Username:</p>
@@ -151,7 +157,7 @@ export default function Login() {
             />
             <p style={login.response.positive ? {color: "green"} : {color: "red"}}>{login.response.message}</p>
             <button onClick={handleLogin}>Submit</button>
-            <p>{sessionStorage.getItem("isLoggedIn")}</p>
+            <p>{sessionStorage.getItem("username") ?? "Not signed in."}</p>
         </div>
         <div className="signup">
             <h1>Signup</h1>

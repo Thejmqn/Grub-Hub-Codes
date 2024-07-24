@@ -1,3 +1,4 @@
+import Code from "./Code";
 import Query from "./Query";
 
 export default function Restaurant(props) {
@@ -6,6 +7,7 @@ export default function Restaurant(props) {
         <Query />
         <p>Restaurant name: {props.name}</p>
         <a href="/">Go back</a>
+        <Code id={props.id}/>
     </div>
     );
 }

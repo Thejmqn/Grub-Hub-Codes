@@ -1,12 +1,14 @@
 import Code from "./Code";
-import Query from "./Query";
+import Default from "./banners/Default.png";
 
 export default function Restaurant(props) {
     return (
     <div className="restaurant">
-        <Query />
-        <p>Restaurant name: {props.name}</p>
-        <a href="/">Go back</a>
+        <a href="/">Go back to home page</a>
+        <h1>Welcome to {props.name}</h1>
+        <img src={props.img ?? Default} alt={"An banner of " + props.name} />
+        <br />
+        <h2>Code information:</h2>
         <Code id={props.id}/>
     </div>
     );

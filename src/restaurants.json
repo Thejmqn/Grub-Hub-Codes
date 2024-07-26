@@ -1,0 +1,32 @@
+[
+    {
+        "id": 1,
+        "name": "Chic-Fil-A",
+        "path": "chic-fil-a",
+        "banner": "ChickFilABanner.jpg"
+    },
+    {
+        "id": 2,
+        "name": "West Range Café",
+        "path": "west-range",
+        "banner": "WestRangeCafeBanner.jpg"
+    },
+    {
+        "id": 3,
+        "name": "Rising Roll",
+        "path": "rising-roll",
+        "banner": "RisingRollBanner.jpg"
+    },
+    {
+        "id": 4,
+        "name": "Einstein Bros. Bagels",
+        "path": "einstein-bros",
+        "banner": "EinsteinBros.jpg"
+    },
+    {
+        "id": 5,
+        "name": "Za'atar at the Castle",
+        "path": "zaatar",
+        "banner": "Zaatar.jpg"
+    } 
+]

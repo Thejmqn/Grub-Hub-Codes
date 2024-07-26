@@ -4,11 +4,12 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	_ "github.com/go-sql-driver/mysql"
-	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 	"strconv"
+
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/gorilla/mux"
 )
 
 type Code struct {
@@ -45,6 +46,7 @@ func getCodeHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	enableCORS(&w)
 
 	var code Code
 	if res.Next() {
@@ -59,13 +61,11 @@ func getCodeHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 	}
 
-	enableCORS(&w)
 	w.Header().Set("Content-Type", "application/json")
 	encode := json.NewEncoder(w).Encode(code)
 	if encode != nil {
 		log.Fatal(encode)
 	}
-	w.WriteHeader(http.StatusOK)
 }
 
 func submitCodeHandler(w http.ResponseWriter, r *http.Request) {
@@ -77,8 +77,8 @@ func submitCodeHandler(w http.ResponseWriter, r *http.Request) {
 	if existsErr != nil {
 		log.Fatal(existsErr)
 	}
-
 	enableCORS(&w)
+
 	var login Login
 	if !existsRes.Next() {
 		w.Header().Set("Trailer", "Type")
@@ -110,7 +110,6 @@ func submitCodeHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Println(err)
 	}
-	w.WriteHeader(http.StatusOK)
 }
 
 func loginHandler(w http.ResponseWriter, r *http.Request) {

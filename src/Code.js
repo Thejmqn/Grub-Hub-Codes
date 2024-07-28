@@ -3,6 +3,7 @@ import { useState } from "react";
 import axios from "axios";
 
 export default function Code(props) {
+    const restaurant = props.restaurant;
     const [inputCode, setInputCode] = useState("");
     const [outputCode, setOutputCode] = useState("");
     const [codeStatus, setCodeStatus] = useState({
@@ -27,7 +28,7 @@ export default function Code(props) {
             return;
         }
 
-        axios.post(`http://localhost:8080/codes/submit/${props.id}/${inputCode}/${sessionStorage.getItem("username")}`)
+        axios.post(`http://localhost:8080/codes/submit/${restaurant.id}/${inputCode}/${sessionStorage.getItem("username")}`)
         .then(res => {
             console.log(res);
             setCodeStatus({positive: true, message: "Successfully submit code."});
@@ -66,8 +67,20 @@ export default function Code(props) {
 
     const getCode = e => {
         e.preventDefault();
-        axios.get(`http://localhost:8080/codes/get/${props.id}`)
+        axios.get(`http://localhost:8080/codes/get/${restaurant.id}`)
         .then(res => {
+            const sendTime = new Date(res.data.dateTime);
+            const currentTime = new Date(Date.now());
+            const timeZoneOffset = sendTime.getTimezoneOffset()*60*1000;
+            const timeDifference = Math.floor((currentTime - sendTime - timeZoneOffset) / 1000);
+
+            if (timeDifference > restaurant.refreshTime) {
+                setCodeStatus({
+                    positive: false,
+                    message: `No code has been reported since the last code refresh.`,
+                });
+                return;
+            }
             setOutputCode(res.data.code);
             setCodeStatus({
                 positive: true,

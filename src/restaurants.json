@@ -3,30 +3,40 @@
         "id": 1,
         "name": "Chic-Fil-A",
         "path": "chic-fil-a",
-        "banner": "ChickFilABanner.jpg"
+        "banner": "ChickFilABanner.jpg",
+        "location": "https://www.openstreetmap.org/node/6879655085",
+        "refreshTime": 60
     },
     {
         "id": 2,
         "name": "West Range Café",
         "path": "west-range",
-        "banner": "WestRangeCafeBanner.jpg"
+        "banner": "WestRangeCafeBanner.jpg",
+        "location": "https://www.openstreetmap.org/node/3499497265",
+        "refreshTime": 60
     },
     {
         "id": 3,
         "name": "Rising Roll",
         "path": "rising-roll",
-        "banner": "RisingRollBanner.jpg"
+        "banner": "RisingRollBanner.jpg",
+        "location": "https://www.openstreetmap.org/way/341127276",
+        "refreshTime": 15
     },
     {
         "id": 4,
         "name": "Einstein Bros. Bagels",
         "path": "einstein-bros",
-        "banner": "EinsteinBros.jpg"
+        "banner": "EinsteinBros.jpg",
+        "location": "https://www.openstreetmap.org/node/6977920272",
+        "refreshTime": 15
     },
     {
         "id": 5,
         "name": "Za'atar at the Castle",
         "path": "zaatar",
-        "banner": "Zaatar.jpg"
+        "banner": "Zaatar.jpg",
+        "location": "https://www.openstreetmap.org/node/3455072148",
+        "refreshTime": 30
     } 
 ]

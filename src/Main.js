@@ -20,12 +20,7 @@ const restaurantRouterArray = () => {
     restaurantArray.push(
       {
         path: `/restaurants/${restaurant.path}`,
-        element: 
-        <Restaurant 
-          name={restaurant.name} 
-          img={`/banners/${restaurant.banner}`} 
-          id={restaurant.id}
-        />
+        element: <Restaurant data={restaurant} />
       }
     );
   });

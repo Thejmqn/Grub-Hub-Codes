@@ -7,17 +7,18 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
 )
 
 type Code struct {
-	ID           int     `json:"id"`
-	Code         int     `json:"code"`
-	UserID       int     `json:"userID"`
-	RestaurantID int     `json:"restaurantID"`
-	DateTime     []uint8 `json:"dateTime"`
+	ID           int       `json:"id"`
+	Code         int       `json:"code"`
+	UserID       int       `json:"userID"`
+	RestaurantID int       `json:"restaurantID"`
+	DateTime     time.Time `json:"dateTime"`
 }
 
 type Login struct {
@@ -42,10 +43,10 @@ func getCodeHandler(w http.ResponseWriter, r *http.Request) {
 	db := openDB()
 	query := fmt.Sprintf("SELECT * FROM codes WHERE restaurant_id=\"%s\" ORDER BY ID DESC LIMIT 1", vars["restaurant_id"])
 	res, err := db.Query(query)
-	defer res.Close()
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer res.Close()
 	enableCORS(&w)
 
 	var code Code
@@ -73,10 +74,10 @@ func submitCodeHandler(w http.ResponseWriter, r *http.Request) {
 	db := openDB()
 	checkExistsQuery := fmt.Sprintf("SELECT * FROM users WHERE username=\"%s\"", vars["username"])
 	existsRes, existsErr := db.Query(checkExistsQuery)
-	defer existsRes.Close()
 	if existsErr != nil {
 		log.Fatal(existsErr)
 	}
+	defer existsRes.Close()
 	enableCORS(&w)
 
 	var login Login
@@ -104,19 +105,17 @@ func submitCodeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	query := fmt.Sprintf("INSERT INTO codes (`code`, `user_id`, `restaurant_id`, `submission_time`) VALUES (\"%s\", \"%d\", \"%s\", NOW())", code, login.ID, vars["restaurant_id"])
-	fmt.Println(query)
 	res, err := db.Query(query)
-	defer res.Close()
 	if err != nil {
 		fmt.Println(err)
 	}
+	defer res.Close()
 }
 
 func loginHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	db := openDB()
 	query := fmt.Sprintf("SELECT * FROM users WHERE username=\"%s\" AND password=\"%s\"", vars["username"], vars["password"])
-	fmt.Println(query)
 	res, err := db.Query(query)
 	if err != nil {
 		log.Fatal(err)
@@ -149,10 +148,10 @@ func signupHandler(w http.ResponseWriter, r *http.Request) {
 	db := openDB()
 	checkExistsQuery := fmt.Sprintf("SELECT * FROM users WHERE username=\"%s\"", vars["username"])
 	existsRes, existsErr := db.Query(checkExistsQuery)
-	defer existsRes.Close()
 	if existsErr != nil {
 		log.Fatal(existsErr)
 	}
+	defer existsRes.Close()
 
 	enableCORS(&w)
 	if existsRes.Next() {
@@ -163,12 +162,11 @@ func signupHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	query := fmt.Sprintf("INSERT INTO users (`username`, `password`, `message`) VALUES (\"%s\", \"%s\", \"%s\")", vars["username"], vars["password"], "Message not set.")
-	fmt.Println(query)
 	res, err := db.Query(query)
-	defer res.Close()
 	if err != nil {
 		fmt.Println(err)
 	}
+	defer res.Close()
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -177,7 +175,7 @@ func enableCORS(w *http.ResponseWriter) {
 }
 
 func openDB() *sql.DB {
-	db, err := sql.Open("mysql", "root:SQLpass@tcp(127.0.0.1:3306)/grubhub_codes")
+	db, err := sql.Open("mysql", "root:SQLpass@tcp(127.0.0.1:3306)/grubhub_codes?parseTime=true")
 	if err != nil {
 		log.Fatal(err)
 	}

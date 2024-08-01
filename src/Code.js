@@ -69,6 +69,13 @@ export default function Code(props) {
         e.preventDefault();
         axios.get(`http://localhost:8080/codes/get/${restaurant.id}`)
         .then(res => {
+            if (!res.data) {
+                setCodeStatus({
+                    positive: false,
+                    message: "No valid codes found.",
+                });
+            }
+
             const sendTime = new Date(res.data.dateTime);
             const currentTime = new Date(Date.now());
             const timeZoneOffset = sendTime.getTimezoneOffset()*60*1000;
@@ -81,6 +88,7 @@ export default function Code(props) {
                 });
                 return;
             }
+            
             setOutputCode(res.data.code);
             setCodeStatus({
                 positive: true,

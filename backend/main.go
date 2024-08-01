@@ -22,10 +22,17 @@ type Code struct {
 }
 
 type Login struct {
-	ID       int    `json:"id"`
-	Username string `json:"username"`
-	Password string `json:"password"`
-	Message  string `json:"message"`
+	ID                int    `json:"id"`
+	Username          string `json:"username"`
+	Password          string `json:"password"`
+	Message           string `json:"message"`
+	TotalSubmissions  int    `json:"totalSubmissions"`
+	RecentSubmissions int    `json:"recentSubmissions"`
+}
+
+type Leaderboard struct {
+	Recent []Login `json:"recent"`
+	Total  []Login `json:"total"`
 }
 
 func main() {
@@ -34,8 +41,10 @@ func main() {
 	router.HandleFunc("/signup/{username}/{password}", signupHandler).Methods(http.MethodPost)
 	router.HandleFunc("/codes/submit/{restaurant_id}/{code}/{username}", submitCodeHandler).Methods(http.MethodPost)
 	router.HandleFunc("/codes/get/{restaurant_id}", getCodeHandler).Methods(http.MethodGet)
+	router.HandleFunc("/leaderboard", getLeaderboardHandler).Methods(http.MethodGet)
 	router.Use(mux.CORSMethodMiddleware(router))
-	log.Fatal(http.ListenAndServe(":8080", router))
+	fmt.Println("Started listening on port 8080")
+	log.Fatal(http.ListenAndServe("localhost:8080", router))
 }
 
 func getCodeHandler(w http.ResponseWriter, r *http.Request) {
@@ -88,7 +97,7 @@ func submitCodeHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	} else {
-		err := existsRes.Scan(&login.ID, &login.Username, &login.Password, &login.Message)
+		err := existsRes.Scan(&login.ID, &login.Username, &login.Password, &login.Message, &login.TotalSubmissions, &login.RecentSubmissions)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -120,11 +129,12 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer res.Close()
 
 	enableCORS(&w)
 	if res.Next() {
 		var login Login
-		err := res.Scan(&login.ID, &login.Username, &login.Password, &login.Message)
+		err := res.Scan(&login.ID, &login.Username, &login.Password, &login.Message, &login.TotalSubmissions, &login.RecentSubmissions)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -134,7 +144,6 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		if encode != nil {
 			log.Fatal(encode)
 		}
-		w.WriteHeader(http.StatusOK)
 	} else {
 		w.Header().Set("Trailer", "Type")
 		w.Header().Set("Type", "INVALID_LOGIN")
@@ -167,7 +176,50 @@ func signupHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(err)
 	}
 	defer res.Close()
-	w.WriteHeader(http.StatusOK)
+}
+
+func getLeaderboardHandler(w http.ResponseWriter, r *http.Request) {
+	db := openDB()
+	enableCORS(&w)
+	const MAX_RESULT = 5
+	recentQuery := fmt.Sprintf("SELECT id, username, message, recent_submissions FROM users ORDER BY recent_submissions DESC LIMIT %d", MAX_RESULT)
+	recentRes, recentErr := db.Query(recentQuery)
+	if recentErr != nil {
+		log.Fatal(recentErr)
+	}
+	defer recentRes.Close()
+
+	var leaderboard Leaderboard
+	for recentRes.Next() {
+		var user Login
+		err := recentRes.Scan(&user.ID, &user.Username, &user.Message, &user.RecentSubmissions)
+		if err != nil {
+			log.Fatal(err)
+		}
+		leaderboard.Recent = append(leaderboard.Recent, user)
+	}
+
+	totalQuery := fmt.Sprintf("SELECT id, username, message, total_submissions FROM users ORDER BY total_submissions DESC LIMIT %d", MAX_RESULT)
+	totalRes, totalErr := db.Query(totalQuery)
+	if totalErr != nil {
+		log.Fatal(recentErr)
+	}
+	defer totalRes.Close()
+
+	for totalRes.Next() {
+		var user Login
+		err := totalRes.Scan(&user.ID, &user.Username, &user.Message, &user.TotalSubmissions)
+		if err != nil {
+			log.Fatal(err)
+		}
+		leaderboard.Total = append(leaderboard.Total, user)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	encode := json.NewEncoder(w).Encode(leaderboard)
+	if encode != nil {
+		log.Fatal(encode)
+	}
 }
 
 func enableCORS(w *http.ResponseWriter) {

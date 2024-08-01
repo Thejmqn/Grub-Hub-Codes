@@ -3,6 +3,7 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import Restaurant from './Restaurant';
 import Login from './Login';
 import Restaurants from './restaurants.json';
+import Leaderboard from './Leaderboard';
 
 const restaurantRouterArray = () => {
   const restaurantArray = [
@@ -32,9 +33,9 @@ const router = createBrowserRouter(restaurantRouterArray());
 function Home() {
   return (
   <div className="Home">
-    <p>Login:</p>
+    <h1>Login:</h1>
     <a href={`/login`}>Login/Signup</a>
-    <p>Restaurants:</p>
+    <h1>Restaurants:</h1>
     <ul>
       {Restaurants.map((restaurant) => {
         return (
@@ -46,6 +47,8 @@ function Home() {
         );
       })}
     </ul>
+    <h1>Leaderboard:</h1>
+    <Leaderboard />
   </div>
   );
 }

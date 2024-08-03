@@ -1,11 +1,11 @@
 import { TextField } from "@mui/material";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 
 export default function Code(props) {
     const restaurant = props.restaurant;
     const [inputCode, setInputCode] = useState("");
-    const [outputCode, setOutputCode] = useState("");
+    const [outputCode, setOutputCode] = useState({code: null, user: null, timeDif: null});
     const [codeStatus, setCodeStatus] = useState({
         positive: false,
         message: ""
@@ -20,7 +20,10 @@ export default function Code(props) {
 
     const submitCode = e => {
         e.preventDefault();
-        if (!sessionStorage.getItem("username")) {
+        const username = sessionStorage.getItem("username");
+        const type = sessionStorage.getItem("type");
+        console.log(type)
+        if (!username) {
             setCodeStatus({positive: false, message: "Must be signed in to submit a code."});
             return;
         } else if (Number(inputCode) < 1000 || Number(inputCode) > 9999) {
@@ -28,14 +31,14 @@ export default function Code(props) {
             return;
         }
 
-        axios.post(`http://localhost:8080/codes/submit/${restaurant.id}/${inputCode}/${sessionStorage.getItem("username")}`)
+        axios.post(`http://localhost:8080/codes/submit/${restaurant.id}/${inputCode}/${username}/${type}`)
         .then(res => {
             console.log(res);
             setCodeStatus({positive: true, message: "Successfully submit code."});
-            setOutputCode(inputCode);
+            setOutputCode({code: inputCode, user: "You!", timeDif: 0});
         })
         .catch(err => {
-            if (err.response.status === 404) {
+            if (err.response.status === 400) {
                 switch (err.response.headers.type) {
                 case "INVALID_USERNAME":
                     setCodeStatus({
@@ -49,10 +52,16 @@ export default function Code(props) {
                         message: "Invalid code. Codes must be 4 digits."
                     });
                     break;
+                case "ILLEGAL_RESUBMISSION":
+                    setCodeStatus({
+                        positive: false,
+                        message: "Code has already been submit. Please wait until refresh."
+                    });
+                    break;
                 default:
                     setCodeStatus({
                         positive: false,
-                        message: "An error occured while reading:" + err.response.headers.type
+                        message: "An error occured while submitting: " + err.response.headers.type
                     });
                     break;
                 }
@@ -66,9 +75,12 @@ export default function Code(props) {
     }
 
     const getCode = e => {
-        e.preventDefault();
+        if (e) {
+            e.preventDefault();
+        }
         axios.get(`http://localhost:8080/codes/get/${restaurant.id}`)
         .then(res => {
+            console.log(res)
             if (!res.data) {
                 setCodeStatus({
                     positive: false,
@@ -89,7 +101,8 @@ export default function Code(props) {
                 return;
             }
             
-            setOutputCode(res.data.code);
+            const data = res.data;
+            setOutputCode({code: data.code, user: data.userID, timeDif: timeDifference});
             setCodeStatus({
                 positive: true,
                 message: "Updated code.",
@@ -112,6 +125,27 @@ export default function Code(props) {
         });
     }
 
+    useEffect(() => {
+        getCode(null);
+    }, []);
+
+    useEffect(() => {
+        const refreshTime = 1000;
+        const interval = setInterval(() => {
+            const time = outputCode.timeDif;
+            if (time == null) {
+                return;
+            }
+
+            if (time < restaurant.refreshTime) {
+                setOutputCode({...outputCode, timeDif: time+1});
+            } else {
+                setOutputCode({code: null, user: null, timeDif: null});
+            }
+        }, refreshTime);
+        return () => clearInterval(interval);
+    }, [outputCode]);
+
     return (
     <div className="code">
         <TextField 
@@ -123,7 +157,8 @@ export default function Code(props) {
             onChange={v => updateCode(v)}
         />
         <div className="inputCode">
-            <h2>Last reported code: {outputCode ?? "Press to get code."}</h2>
+            <h2>Last reported code: {outputCode.code ?? "No recent codes reported."}</h2>
+            {outputCode.user && <p>Code was reported by user "{outputCode.user}" {outputCode.timeDif} seconds ago.</p>}
             <button onClick={getCode}>Update Code</button>
             <p style={codeStatus.positive ? {color: "green"} : {color: "red"}}>{codeStatus.message}</p>
         </div>

@@ -129,8 +129,8 @@ export default function Login() {
     }
 
     const sessionLogin = (username) => {
-        sessionStorage.setItem("loggedIn", "true");
         sessionStorage.setItem("username", username);
+        sessionStorage.setItem("type", "login");
     }
 
     return (

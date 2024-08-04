@@ -31,7 +31,7 @@ export default function Code(props) {
             return;
         }
 
-        axios.post(`http://localhost:8080/codes/submit/${restaurant.id}/${inputCode}/${username}/${type}`)
+        axios.post(`https://gh-backend.azurewebsites.net/codes/submit/${restaurant.id}/${inputCode}/${username}/${type}`)
         .then(res => {
             console.log(res);
             setCodeStatus({positive: true, message: "Successfully submit code."});
@@ -78,7 +78,7 @@ export default function Code(props) {
         if (e) {
             e.preventDefault();
         }
-        axios.get(`http://localhost:8080/codes/get/${restaurant.id}`)
+        axios.get(`https://gh-backend.azurewebsites.net/codes/get/${restaurant.id}`)
         .then(res => {
             console.log(res)
             if (!res.data) {

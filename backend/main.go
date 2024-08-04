@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
@@ -36,6 +37,11 @@ type Leaderboard struct {
 }
 
 func main() {
+	port := os.Getenv("HTTP_PLATFORM_PORT")
+	if port == "" {
+		port = "8080"
+	}
+
 	router := mux.NewRouter()
 	router.HandleFunc("/login/{username}/{password}", loginHandler).Methods(http.MethodPost)
 	router.HandleFunc("/signup/{username}/{password}", signupHandler).Methods(http.MethodPost)
@@ -43,8 +49,8 @@ func main() {
 	router.HandleFunc("/codes/get/{restaurant_id}", getCodeHandler).Methods(http.MethodGet)
 	router.HandleFunc("/leaderboard", getLeaderboardHandler).Methods(http.MethodGet)
 	router.Use(mux.CORSMethodMiddleware(router))
-	fmt.Println("Started listening on port 8080")
-	log.Fatal(http.ListenAndServe("localhost:8080", router))
+	fmt.Println("Started listening on port " + port)
+	log.Fatal(http.ListenAndServe("localhost:"+port, router))
 }
 
 func getCodeHandler(w http.ResponseWriter, r *http.Request) {

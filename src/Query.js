@@ -9,7 +9,7 @@ export default function Query() {
             setQueryText({positive: false, text: "Must be signed in to report a code."});
             return;
         }
-        axios.get("http://localhost:8080/codes/1")
+        axios.get("https://gh-backend.azurewebsites.net/codes/1")
         .then(res => {
             setQueryText(res.data[0].code);
         })

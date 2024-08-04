@@ -9,7 +9,7 @@ export default function Leaderboard() {
     const [leaderboard, setLeaderboard] = useState({status: AWAITING, data: {}});
 
     const getLeaderboard = () => {
-        axios.get("http://localhost:8080/leaderboard")
+        axios.get("https://gh-backend.azurewebsites.net/leaderboard")
         .then(res => {
             setLeaderboard({status: RECEIVED, data: res.data});
         })

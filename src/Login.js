@@ -41,7 +41,7 @@ export default function Login() {
         }
 
         const passwordHash = sha256(password);
-        axios.post(`http://localhost:8080/login/${username}/${passwordHash}`)
+        axios.post(`https://gh-backend.azurewebsites.net/${username}/${passwordHash}`)
         .then(res => {
             setLogin({...login, response: {
                 positive: true,
@@ -91,7 +91,7 @@ export default function Login() {
         }
 
         const passwordHash = sha256(password);
-        axios.post(`http://localhost:8080/signup/${username}/${passwordHash}`)
+        axios.post(`https://gh-backend.azurewebsites.net/${username}/${passwordHash}`)
         .then(res => {
             setSignup({...signup, response: {
                 positive: true,

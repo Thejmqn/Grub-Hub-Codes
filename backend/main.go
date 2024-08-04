@@ -231,7 +231,7 @@ func signupHandler(w http.ResponseWriter, r *http.Request) {
 		vars["username"], vars["password"], "Message not set.", 0)
 	res, err := db.Query(query)
 	if err != nil {
-		fmt.Println(err)
+		log.Fatal(err)
 	}
 	defer res.Close()
 }
@@ -285,7 +285,15 @@ func enableCORS(w *http.ResponseWriter) {
 }
 
 func openDB() *sql.DB {
-	db, err := sql.Open("mysql", "root:SQLpass@tcp(127.0.0.1:3306)/grubhub_codes?parseTime=true")
+	const (
+		Hostname = "mysql-ghcodes.mysql.database.azure.com"
+		Username = "jmqn"
+		Password = "4Videos123$"
+		Port     = "3306"
+		Database = "grubhub_codes"
+	)
+	connection := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true&tls=true", Username, Password, Hostname, Port, Database)
+	db, err := sql.Open("mysql", connection)
 	if err != nil {
 		log.Fatal(err)
 	}

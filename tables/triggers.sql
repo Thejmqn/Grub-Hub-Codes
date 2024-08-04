@@ -1,5 +1,5 @@
 CREATE TRIGGER code_submission
-AFTER INSERT ON code_submission
+AFTER INSERT ON codes
 FOR EACH ROW
 BEGIN
     UPDATE users SET total_submissions = total_submissions + 1

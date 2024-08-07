@@ -22,7 +22,6 @@ export default function Code(props) {
         e.preventDefault();
         const username = sessionStorage.getItem("username");
         const type = sessionStorage.getItem("type");
-        console.log(type)
         if (!username) {
             setCodeStatus({positive: false, message: "Must be signed in to submit a code."});
             return;
@@ -33,7 +32,6 @@ export default function Code(props) {
 
         axios.post(`https://gh-backend.azurewebsites.net/codes/submit/${restaurant.id}/${inputCode}/${username}/${type}`)
         .then(res => {
-            console.log(res);
             setCodeStatus({positive: true, message: "Successfully submit code."});
             setOutputCode({code: inputCode, user: "You!", timeDif: 0});
         })
@@ -86,12 +84,14 @@ export default function Code(props) {
                     positive: false,
                     message: "No valid codes found.",
                 });
+                return;
             }
 
             const sendTime = new Date(res.data.dateTime);
             const currentTime = new Date(Date.now());
             const timeZoneOffset = sendTime.getTimezoneOffset()*60*1000;
             const timeDifference = Math.floor((currentTime - sendTime - timeZoneOffset) / 1000);
+            console.log(timeDifference + " " + restaurant.refreshTime)
 
             if (timeDifference > restaurant.refreshTime) {
                 setCodeStatus({

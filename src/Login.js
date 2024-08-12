@@ -4,6 +4,7 @@ import { sha256 } from "js-sha256";
 import axios from "axios";
 
 export default function Login() {
+    const backend = "http://localhost:8080";
     const [login, setLogin] = useState({
         username: "",
         password: "",
@@ -16,13 +17,14 @@ export default function Login() {
         username: "",
         password: "",
         confirmPassword: "",
+        message: "",
         response: {
             positive: true,
             message: "",
         },
     });
 
-    const submitLogin = (username, password) => {
+    const submitLogin = (username, password, message) => {
         let isError = false;
         let errorMessage = "An unknown error occurred.";
         if (username.length < 3) {
@@ -41,7 +43,7 @@ export default function Login() {
         }
 
         const passwordHash = sha256(password);
-        axios.post(`https://gh-backend.azurewebsites.net/${username}/${passwordHash}`)
+        axios.post(`${backend}/login/${username}/${passwordHash}`)
         .then(res => {
             setLogin({...login, response: {
                 positive: true,
@@ -50,6 +52,13 @@ export default function Login() {
             sessionLogin(username);
         })
         .catch(err => {
+            if (!err.response) {
+                setLogin({...login, response: {
+                    positive: false,
+                    message: "Problem connecting to database.",
+                }});
+                return;
+            }
             if (err.response.status === 400) {
                 if (err.response.headers.type === "INVALID_LOGIN") {
                     setLogin({...login, response: {
@@ -66,7 +75,7 @@ export default function Login() {
         })
     }
 
-    const submitSignup = (username, password, confirmPassword) => {
+    const submitSignup = (username, password, confirmPassword, message) => {
         let isError = false;
         let errorMessage = "An unknown error occurred.";
         if (password !== confirmPassword) {
@@ -91,7 +100,7 @@ export default function Login() {
         }
 
         const passwordHash = sha256(password);
-        axios.post(`https://gh-backend.azurewebsites.net/${username}/${passwordHash}`)
+        axios.post(`${backend}/signup/${username}/${passwordHash}/${message}`)
         .then(res => {
             setSignup({...signup, response: {
                 positive: true,
@@ -100,12 +109,33 @@ export default function Login() {
             sessionLogin(username);
         })
         .catch(err => {
+            if (!err.response) {
+                setSignup({...signup, response: {
+                    positive: false,
+                    message: "Problem connecting to database.",
+                }});
+                return;
+            }
             if (err.response.status === 400) {
-                if (err.response.headers.type === "USERNAME_EXISTS") {
+                switch (err.response.headers.type) {
+                case "USERNAME_EXISTS":
                     setSignup({...signup, response: {
                         positive: false,
                         message: "Username already exists.",
                     }});
+                break;
+                case "VARIABLE_TOO_LONG":
+                    setSignup({...signup, response: {
+                        positive: false,
+                        message: "Variable name is too long.",
+                    }});
+                break;
+                default:
+                    setSignup({...signup, response: {
+                        positive: false,
+                        message: "Invalid request sent.",
+                    }});
+                break;
                 }
             } else {
                 setSignup({...signup, response: {
@@ -119,13 +149,11 @@ export default function Login() {
     const handleLogin = e => {
         e.preventDefault();
         submitLogin(login.username, login.password)
-        console.log("asdasdsd")
     }
 
     const handleSignup = e => {
         e.preventDefault();
-        submitSignup(signup.username, signup.password, signup.confirmPassword);
-        console.log("asdasdsd")
+        submitSignup(signup.username, signup.password, signup.confirmPassword, signup.message);
     }
 
     const sessionLogin = (username) => {
@@ -135,7 +163,7 @@ export default function Login() {
 
     return (
     <div className="loginPage">
-        <a href="/">Return Home</a>
+        <a href="/">Go back to home page</a>
         <div className="login">
             <h1>Login</h1>
             <p>Username:</p>
@@ -157,7 +185,6 @@ export default function Login() {
             />
             <p style={login.response.positive ? {color: "green"} : {color: "red"}}>{login.response.message}</p>
             <button onClick={handleLogin}>Submit</button>
-            <p>{sessionStorage.getItem("username") ?? "Not signed in."}</p>
         </div>
         <div className="signup">
             <h1>Signup</h1>
@@ -186,6 +213,14 @@ export default function Login() {
                 variant="outlined" 
                 value={signup.confirmPassword}
                 onChange={v => setSignup({...signup, confirmPassword: v.target.value})}
+            />
+            <p>Leaderboard Message (Optional):</p>
+            <TextField 
+                id="leaderboardMessage" 
+                label="Message" 
+                variant="outlined" 
+                value={signup.message}
+                onChange={v => setSignup({...signup, message: v.target.value})}
             />
             <p style={signup.response.positive ? {color: "green"} : {color: "red"}}>{signup.response.message}</p>
             <button onClick={handleSignup}>Submit</button>

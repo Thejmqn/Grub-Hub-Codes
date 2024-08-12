@@ -44,10 +44,12 @@ func main() {
 
 	router := mux.NewRouter()
 	router.HandleFunc("/login/{username}/{password}", loginHandler).Methods(http.MethodPost)
-	router.HandleFunc("/signup/{username}/{password}", signupHandler).Methods(http.MethodPost)
+	router.HandleFunc("/signup/{username}/{password}/{message}", signupHandler).Methods(http.MethodPost)
 	router.HandleFunc("/codes/submit/{restaurant_id}/{code}/{username}/{type}", submitCodeHandler).Methods(http.MethodPost)
 	router.HandleFunc("/codes/get/{restaurant_id}", getCodeHandler).Methods(http.MethodGet)
 	router.HandleFunc("/leaderboard", getLeaderboardHandler).Methods(http.MethodGet)
+	router.HandleFunc("/change/message/{username}/{password}/{newMessage}", changeMessageHandler).Methods(http.MethodPost)
+	router.HandleFunc("/change/password/{username}/{oldPassword}/{newPassword}", changePasswordHandler).Methods(http.MethodPost)
 	router.Use(mux.CORSMethodMiddleware(router))
 	fmt.Println("Started listening on port " + port)
 	log.Fatal(http.ListenAndServe("localhost:"+port, router))
@@ -56,6 +58,7 @@ func main() {
 func getCodeHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	db := openDB()
+	defer db.Close()
 	query := fmt.Sprintf("SELECT * FROM codes WHERE restaurant_id=\"%s\" ORDER BY ID DESC LIMIT 1", vars["restaurant_id"])
 	res, err := db.Query(query)
 	if err != nil {
@@ -87,6 +90,7 @@ func getCodeHandler(w http.ResponseWriter, r *http.Request) {
 func submitCodeHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	db := openDB()
+	defer db.Close()
 	enableCORS(&w)
 
 	var login Login
@@ -187,6 +191,7 @@ func submitCodeHandler(w http.ResponseWriter, r *http.Request) {
 func loginHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	db := openDB()
+	defer db.Close()
 	query := fmt.Sprintf("SELECT * FROM users WHERE username=\"%s\" AND password=\"%s\"", vars["username"], vars["password"])
 	res, err := db.Query(query)
 	if err != nil {
@@ -218,6 +223,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 func signupHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	db := openDB()
+	defer db.Close()
 	checkExistsQuery := fmt.Sprintf("SELECT * FROM users WHERE username=\"%s\"", vars["username"])
 	existsRes, existsErr := db.Query(checkExistsQuery)
 	if existsErr != nil {
@@ -233,8 +239,17 @@ func signupHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
+
+	if len(vars["message"]) > 36 || len(vars["password"]) > 64 || len(vars["message"]) > 256 {
+		w.Header().Set("Trailer", "Type")
+		w.Header().Set("Type", "VARIABLE_TOO_LONG")
+		w.Header().Set("Access-Control-Expose-Headers", "Type")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
 	query := fmt.Sprintf("INSERT INTO users (`username`, `password`, `message`, `cookie_user`) VALUES (\"%s\", \"%s\", \"%s\", \"%d\")",
-		vars["username"], vars["password"], "Message not set.", 0)
+		vars["username"], vars["password"], vars["message"], 0)
 	res, err := db.Query(query)
 	if err != nil {
 		log.Fatal(err)
@@ -244,6 +259,7 @@ func signupHandler(w http.ResponseWriter, r *http.Request) {
 
 func getLeaderboardHandler(w http.ResponseWriter, r *http.Request) {
 	db := openDB()
+	defer db.Close()
 	enableCORS(&w)
 	const MaxResult = 5
 	recentQuery := fmt.Sprintf("SELECT id, username, message, recent_submissions FROM users ORDER BY recent_submissions DESC LIMIT %d", MaxResult)
@@ -286,19 +302,81 @@ func getLeaderboardHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func changeMessageHandler(w http.ResponseWriter, r *http.Request) {
+	db := openDB()
+	defer db.Close()
+	vars := mux.Vars(r)
+	enableCORS(&w)
+
+	query := fmt.Sprintf("UPDATE users SET message=\"%s\" WHERE username=\"%s\" AND password=\"%s\"",
+		vars["newMessage"], vars["username"], vars["password"])
+	res, err := db.Exec(query)
+	if err != nil {
+		log.Fatal(err)
+	}
+	affected, err := res.RowsAffected()
+	if err != nil {
+		log.Fatal(err)
+	}
+	if affected <= 0 {
+		w.Header().Set("Trailer", "Type")
+		w.Header().Set("Type", "INVALID_LOGIN")
+		w.Header().Set("Access-Control-Expose-Headers", "Type")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+}
+
+func changePasswordHandler(w http.ResponseWriter, r *http.Request) {
+	db := openDB()
+	defer db.Close()
+	vars := mux.Vars(r)
+	enableCORS(&w)
+
+	if vars["newPassword"] == vars["oldPassword"] {
+		w.Header().Set("Trailer", "Type")
+		w.Header().Set("Type", "PASSWORDS_SAME")
+		w.Header().Set("Access-Control-Expose-Headers", "Type")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	query := fmt.Sprintf("UPDATE users SET password=\"%s\" WHERE username=\"%s\" AND password=\"%s\"",
+		vars["newPassword"], vars["username"], vars["oldPassword"])
+	res, err := db.Exec(query)
+	if err != nil {
+		log.Fatal(err)
+	}
+	affected, err := res.RowsAffected()
+	if err != nil {
+		log.Fatal(err)
+	}
+	if affected <= 0 {
+		w.Header().Set("Trailer", "Type")
+		w.Header().Set("Type", "INVALID_LOGIN")
+		w.Header().Set("Access-Control-Expose-Headers", "Type")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+}
+
 func enableCORS(w *http.ResponseWriter) {
 	(*w).Header().Set("Access-Control-Allow-Origin", "*")
 }
 
 func openDB() *sql.DB {
 	const (
-		Hostname = "mysql-ghcodes.mysql.database.azure.com"
-		Username = "jmqn"
-		Password = "4Videos123$"
-		Port     = "3306"
-		Database = "grubhub_codes"
+		Hostname  = "mysql-ghcodes.mysql.database.azure.com"
+		Username  = "jmqn"
+		Password  = "4Videos123$"
+		Port      = "3306"
+		Database  = "grubhub_codes"
+		Hostname2 = "127.0.0.1"
+		Username2 = "root"
+		Password2 = "SQLpass"
+		UseTLS    = "true"
 	)
-	connection := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true&tls=true", Username, Password, Hostname, Port, Database)
+	connection := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true&tls=%s", Username, Password, Hostname, Port, Database, UseTLS)
 	db, err := sql.Open("mysql", connection)
 	if err != nil {
 		log.Fatal(err)

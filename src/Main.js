@@ -4,6 +4,7 @@ import Restaurant from './Restaurant';
 import Login from './Login';
 import Restaurants from './restaurants.json';
 import Leaderboard from './Leaderboard';
+import Personalize from './Personalize';
 
 const restaurantRouterArray = () => {
   const restaurantArray = [
@@ -15,6 +16,10 @@ const restaurantRouterArray = () => {
     {
       path: "/login",
       element: <Login />,
+    },
+    {
+      path: "/personalize",
+      element: <Personalize />,
     }
   ];
   Restaurants.forEach(restaurant => {
@@ -35,6 +40,8 @@ function Home() {
   <div className="Home">
     <h1>Login:</h1>
     <a href={`/login`}>Login/Signup</a>
+    <br />
+    <a href={`/personalize`}>Personalize your account</a>
     <h1>Restaurants:</h1>
     <ul>
       {Restaurants.map((restaurant) => {

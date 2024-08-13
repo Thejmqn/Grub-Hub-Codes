@@ -58,6 +58,11 @@ export default function Personalize() {
                     }});
                     break;
                 }
+            } else if (err?.response?.headers?.error) {
+                setMessage({...message, response: {
+                    positive: false,
+                    message: "500 Internal Server Error: " + err.response.headers.error,
+                }});
             } else {
                 setMessage({...message, response: {
                     positive: false,
@@ -116,6 +121,11 @@ export default function Personalize() {
                     }});
                     break;
                 }
+            } else if (err?.response?.headers?.error) {
+                setPassword({...password, response: {
+                    positive: false,
+                    message: "500 Internal Server Error: " + err.response.headers.error,
+                }});
             } else {
                 setPassword({...password, response: {
                     positive: false,

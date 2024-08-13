@@ -66,6 +66,11 @@ export default function Login() {
                         message: "Invalid username or password.",
                     }});
                 }
+            } else if (err?.response?.headers?.error) {
+                setLogin({...login, response: {
+                    positive: false,
+                    message: "500 Internal Server Error: " + err.response.headers.error,
+                }});
             } else {
                 setLogin({...login, response: {
                     positive: false,
@@ -137,6 +142,11 @@ export default function Login() {
                     }});
                 break;
                 }
+            } else if (err?.response?.headers?.error) {
+                setLogin({...login, response: {
+                    positive: false,
+                    message: "500 Internal Server Error: " + err.response.headers.error,
+                }});
             } else {
                 setSignup({...signup, response: {
                     positive: false,

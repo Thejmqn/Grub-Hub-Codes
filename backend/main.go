@@ -57,21 +57,23 @@ func main() {
 
 func getCodeHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
+	enableCORS(&w)
 	db := openDB()
 	defer db.Close()
 	query := fmt.Sprintf("SELECT * FROM codes WHERE restaurant_id=\"%s\" ORDER BY ID DESC LIMIT 1", vars["restaurant_id"])
 	res, err := db.Query(query)
 	if err != nil {
-		log.Fatal(err)
+		writeError(&w, err)
+		return
 	}
 	defer res.Close()
-	enableCORS(&w)
 
 	var code Code
 	if res.Next() {
 		err := res.Scan(&code.ID, &code.Code, &code.UserID, &code.RestaurantID, &code.DateTime)
 		if err != nil {
-			log.Fatal(err)
+			writeError(&w, err)
+			return
 		}
 	} else {
 		w.Header().Set("Trailer", "Type")
@@ -81,9 +83,10 @@ func getCodeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	encode := json.NewEncoder(w).Encode(code)
-	if encode != nil {
-		log.Fatal(encode)
+	err = json.NewEncoder(w).Encode(code)
+	if err != nil {
+		writeError(&w, err)
+		return
 	}
 }
 
@@ -97,7 +100,8 @@ func submitCodeHandler(w http.ResponseWriter, r *http.Request) {
 	checkExistsQuery := fmt.Sprintf("SELECT id FROM users WHERE username=\"%s\"", vars["username"])
 	existsRes, existsErr := db.Query(checkExistsQuery)
 	if existsErr != nil {
-		log.Fatal(existsErr)
+		writeError(&w, existsErr)
+		return
 	}
 	defer existsRes.Close()
 	switch vars["type"] {
@@ -107,19 +111,22 @@ func submitCodeHandler(w http.ResponseWriter, r *http.Request) {
 				vars["username"], "N/A", "N/A", 1)
 			cookieRes, cookieErr := db.Query(cookieUserQuery)
 			if cookieErr != nil {
-				log.Fatal(cookieErr)
+				writeError(&w, cookieErr)
+				return
 			}
 			defer cookieRes.Close()
 		}
 		loginIDRes, loginIDErr := db.Query(checkExistsQuery)
 		if loginIDErr != nil {
-			log.Fatal(loginIDErr)
+			writeError(&w, loginIDErr)
+			return
 		}
 		defer loginIDRes.Close()
 		if loginIDRes.Next() {
 			err := loginIDRes.Scan(&login.ID)
 			if err != nil {
-				log.Fatal(err)
+				writeError(&w, err)
+				return
 			}
 		} else {
 			w.Header().Set("Trailer", "Type")
@@ -138,7 +145,8 @@ func submitCodeHandler(w http.ResponseWriter, r *http.Request) {
 		} else {
 			err := existsRes.Scan(&login.ID)
 			if err != nil {
-				log.Fatal(err)
+				writeError(&w, err)
+				return
 			}
 		}
 	default:
@@ -162,14 +170,16 @@ func submitCodeHandler(w http.ResponseWriter, r *http.Request) {
 	checkResubmissionQuery := fmt.Sprintf("SELECT code FROM codes WHERE restaurant_id=\"%s\" ORDER BY ID DESC LIMIT 1", vars["restaurant_id"])
 	resubRes, resubErr := db.Query(checkResubmissionQuery)
 	if resubErr != nil {
-		log.Fatal(resubErr)
+		writeError(&w, resubErr)
+		return
 	}
 	defer resubRes.Close()
 	if resubRes.Next() {
 		var lastCode string
 		err := resubRes.Scan(&lastCode)
 		if err != nil {
-			log.Fatal(err)
+			writeError(&w, err)
+			return
 		}
 		if lastCode == code {
 			w.Header().Set("Trailer", "Type")
@@ -183,7 +193,8 @@ func submitCodeHandler(w http.ResponseWriter, r *http.Request) {
 	query := fmt.Sprintf("INSERT INTO codes (`code`, `user_id`, `restaurant_id`, `submission_time`) VALUES (\"%s\", \"%d\", \"%s\", NOW())", code, login.ID, vars["restaurant_id"])
 	res, err := db.Query(query)
 	if err != nil {
-		log.Fatal(err)
+		writeError(&w, err)
+		return
 	}
 	defer res.Close()
 }
@@ -192,25 +203,28 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	db := openDB()
 	defer db.Close()
-	query := fmt.Sprintf("SELECT username FROM users WHERE username=\"%s\" AND password=\"%s\"", vars["username"], vars["password"])
+	enableCORS(&w)
+	query := fmt.Sprintf("SELECT * FROM users WHERE username=\"%s\" AND password=\"%s\"", vars["username"], vars["password"])
 	res, err := db.Query(query)
 	if err != nil {
-		log.Fatal(err)
+		writeError(&w, err)
+		return
 	}
 	defer res.Close()
 
-	enableCORS(&w)
 	if res.Next() {
 		var login Login
 		err := res.Scan(&login.Username)
 		if err != nil {
-			log.Fatal(err)
+			writeError(&w, err)
+			return
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		encode := json.NewEncoder(w).Encode(login)
-		if encode != nil {
-			log.Fatal(encode)
+		err = json.NewEncoder(w).Encode(login)
+		if err != nil {
+			writeError(&w, err)
+			return
 		}
 	} else {
 		w.Header().Set("Trailer", "Type")
@@ -224,14 +238,15 @@ func signupHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	db := openDB()
 	defer db.Close()
+	enableCORS(&w)
 	checkExistsQuery := fmt.Sprintf("SELECT * FROM users WHERE username=\"%s\"", vars["username"])
 	existsRes, existsErr := db.Query(checkExistsQuery)
 	if existsErr != nil {
-		log.Fatal(existsErr)
+		writeError(&w, existsErr)
+		return
 	}
 	defer existsRes.Close()
 
-	enableCORS(&w)
 	if existsRes.Next() {
 		w.Header().Set("Trailer", "Type")
 		w.Header().Set("Type", "USERNAME_EXISTS")
@@ -252,7 +267,8 @@ func signupHandler(w http.ResponseWriter, r *http.Request) {
 		vars["username"], vars["password"], vars["message"], 0)
 	res, err := db.Query(query)
 	if err != nil {
-		log.Fatal(err)
+		writeError(&w, err)
+		return
 	}
 	defer res.Close()
 }
@@ -265,7 +281,8 @@ func getLeaderboardHandler(w http.ResponseWriter, r *http.Request) {
 	recentQuery := fmt.Sprintf("SELECT id, username, message, recent_submissions FROM users ORDER BY recent_submissions DESC LIMIT %d", MaxResult)
 	recentRes, recentErr := db.Query(recentQuery)
 	if recentErr != nil {
-		log.Fatal(recentErr)
+		writeError(&w, recentErr)
+		return
 	}
 	defer recentRes.Close()
 
@@ -274,7 +291,8 @@ func getLeaderboardHandler(w http.ResponseWriter, r *http.Request) {
 		var user Login
 		err := recentRes.Scan(&user.ID, &user.Username, &user.Message, &user.RecentSubmissions)
 		if err != nil {
-			log.Fatal(err)
+			writeError(&w, err)
+			return
 		}
 		leaderboard.Recent = append(leaderboard.Recent, user)
 	}
@@ -282,7 +300,8 @@ func getLeaderboardHandler(w http.ResponseWriter, r *http.Request) {
 	totalQuery := fmt.Sprintf("SELECT id, username, message, total_submissions FROM users ORDER BY total_submissions DESC LIMIT %d", MaxResult)
 	totalRes, totalErr := db.Query(totalQuery)
 	if totalErr != nil {
-		log.Fatal(recentErr)
+		writeError(&w, totalErr)
+		return
 	}
 	defer totalRes.Close()
 
@@ -290,15 +309,17 @@ func getLeaderboardHandler(w http.ResponseWriter, r *http.Request) {
 		var user Login
 		err := totalRes.Scan(&user.ID, &user.Username, &user.Message, &user.TotalSubmissions)
 		if err != nil {
-			log.Fatal(err)
+			writeError(&w, err)
+			return
 		}
 		leaderboard.Total = append(leaderboard.Total, user)
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	encode := json.NewEncoder(w).Encode(leaderboard)
-	if encode != nil {
-		log.Fatal(encode)
+	err := json.NewEncoder(w).Encode(leaderboard)
+	if err != nil {
+		writeError(&w, err)
+		return
 	}
 }
 
@@ -312,11 +333,13 @@ func changeMessageHandler(w http.ResponseWriter, r *http.Request) {
 		vars["newMessage"], vars["username"], vars["password"])
 	res, err := db.Exec(query)
 	if err != nil {
-		log.Fatal(err)
+		writeError(&w, err)
+		return
 	}
 	affected, err := res.RowsAffected()
 	if err != nil {
-		log.Fatal(err)
+		writeError(&w, err)
+		return
 	}
 	if affected <= 0 {
 		w.Header().Set("Trailer", "Type")
@@ -345,11 +368,13 @@ func changePasswordHandler(w http.ResponseWriter, r *http.Request) {
 		vars["newPassword"], vars["username"], vars["oldPassword"])
 	res, err := db.Exec(query)
 	if err != nil {
-		log.Fatal(err)
+		writeError(&w, err)
+		return
 	}
 	affected, err := res.RowsAffected()
 	if err != nil {
-		log.Fatal(err)
+		writeError(&w, err)
+		return
 	}
 	if affected <= 0 {
 		w.Header().Set("Trailer", "Type")
@@ -364,6 +389,13 @@ func enableCORS(w *http.ResponseWriter) {
 	(*w).Header().Set("Access-Control-Allow-Origin", "*")
 }
 
+func writeError(w *http.ResponseWriter, err error) {
+	(*w).Header().Set("Trailer", "Error")
+	(*w).Header().Set("Error", err.Error())
+	(*w).Header().Set("Access-Control-Expose-Headers", "Error")
+	(*w).WriteHeader(http.StatusInternalServerError)
+}
+
 func openDB() *sql.DB {
 	port := "3306"
 	database := "grubhub_codes"
@@ -371,7 +403,7 @@ func openDB() *sql.DB {
 	password := os.Getenv("GH_DB_PASSWORD")
 	hostname := os.Getenv("GH_DB_HOSTNAME")
 	useTLS := os.Getenv("GH_DB_USETLS")
-	
+
 	connection := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true&tls=%s", username, password, hostname, port, database, useTLS)
 	db, err := sql.Open("mysql", connection)
 	if err != nil {

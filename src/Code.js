@@ -63,6 +63,11 @@ export default function Code(props) {
                     });
                     break;
                 }
+            } else if (err?.response?.headers?.error) {
+                setCodeStatus({...codeStatus, response: {
+                    positive: false,
+                    message: "500 Internal Server Error: " + err.response.headers.error,
+                }});
             } else {
                 setCodeStatus({
                     positive: false,
@@ -116,6 +121,11 @@ export default function Code(props) {
                         message: "No valid codes found.",
                     });
                 }
+            } else if (err?.response?.headers?.error) {
+                setCodeStatus({...codeStatus, response: {
+                    positive: false,
+                    message: "500 Internal Server Error: " + err.response.headers.error,
+                }});
             } else {
                 setCodeStatus({
                     positive: false,

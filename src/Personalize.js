@@ -4,7 +4,7 @@ import {TextField} from "@mui/material";
 import { sha256 } from "js-sha256";
 
 export default function Personalize() {
-    const backend = "http://localhost:8080";
+    const backend = "https://gh-backend.azurewebsites.net";
     const [message, setMessage] = useState({
         username: '',
         password: '',

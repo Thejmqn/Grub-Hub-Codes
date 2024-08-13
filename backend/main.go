@@ -192,7 +192,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	db := openDB()
 	defer db.Close()
-	query := fmt.Sprintf("SELECT * FROM users WHERE username=\"%s\" AND password=\"%s\"", vars["username"], vars["password"])
+	query := fmt.Sprintf("SELECT username FROM users WHERE username=\"%s\" AND password=\"%s\"", vars["username"], vars["password"])
 	res, err := db.Query(query)
 	if err != nil {
 		log.Fatal(err)
@@ -202,7 +202,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	enableCORS(&w)
 	if res.Next() {
 		var login Login
-		err := res.Scan(&login.ID, &login.Username, &login.Password, &login.Message, &login.TotalSubmissions, &login.RecentSubmissions)
+		err := res.Scan(&login.Username)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -365,18 +365,14 @@ func enableCORS(w *http.ResponseWriter) {
 }
 
 func openDB() *sql.DB {
-	const (
-		Hostname  = "mysql-ghcodes.mysql.database.azure.com"
-		Username  = "jmqn"
-		Password  = "4Videos123$"
-		Port      = "3306"
-		Database  = "grubhub_codes"
-		Hostname2 = "127.0.0.1"
-		Username2 = "root"
-		Password2 = "SQLpass"
-		UseTLS    = "true"
-	)
-	connection := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true&tls=%s", Username, Password, Hostname, Port, Database, UseTLS)
+	port := "3306"
+	database := "grubhub_codes"
+	username := os.Getenv("GH_DB_USERNAME")
+	password := os.Getenv("GH_DB_PASSWORD")
+	hostname := os.Getenv("GH_DB_HOSTNAME")
+	useTLS := os.Getenv("GH_DB_USETLS")
+	
+	connection := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true&tls=%s", username, password, hostname, port, database, useTLS)
 	db, err := sql.Open("mysql", connection)
 	if err != nil {
 		log.Fatal(err)

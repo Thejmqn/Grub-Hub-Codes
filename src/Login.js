@@ -4,7 +4,7 @@ import { sha256 } from "js-sha256";
 import axios from "axios";
 
 export default function Login() {
-    const backend = "http://localhost:8080";
+    const backend = "https://gh-backend.azurewebsites.net";
     const [login, setLogin] = useState({
         username: "",
         password: "",
@@ -49,7 +49,7 @@ export default function Login() {
                 positive: true,
                 message: "Successfully logged in.",
             }});
-            sessionLogin(username);
+            sessionLogin(res.data.username);
         })
         .catch(err => {
             if (!err.response) {

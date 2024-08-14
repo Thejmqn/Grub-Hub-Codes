@@ -83,7 +83,6 @@ export default function Code(props) {
         }
         axios.get(`https://gh-backend.azurewebsites.net/codes/get/${restaurant.id}`)
         .then(res => {
-            console.log(res)
             if (!res.data) {
                 setCodeStatus({
                     positive: false,
@@ -96,7 +95,6 @@ export default function Code(props) {
             const currentTime = new Date(Date.now());
             const timeZoneOffset = sendTime.getTimezoneOffset()*60*1000;
             const timeDifference = Math.floor((currentTime - sendTime - timeZoneOffset) / 1000);
-            console.log(timeDifference + " " + restaurant.refreshTime)
 
             if (timeDifference > restaurant.refreshTime) {
                 setCodeStatus({

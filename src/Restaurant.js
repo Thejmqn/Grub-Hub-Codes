@@ -1,5 +1,6 @@
 import Code from "./Code";
 import Cookie from "./Cookie";
+import SignInInfo from "./SignInInfo";
 
 export default function Restaurant(props) {
     const restaurant = props.data;
@@ -7,6 +8,7 @@ export default function Restaurant(props) {
     <div className="restaurant">
         <Cookie />
         <a href="/">Go back to home page</a>
+        <SignInInfo />
         <h1>Welcome to {restaurant.name}</h1>
         <img 
             src={`/banners/${restaurant.banner}` ?? `/banners/Default.png`} 

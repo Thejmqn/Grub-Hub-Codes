@@ -29,6 +29,8 @@ type Login struct {
 	Message           string `json:"message"`
 	TotalSubmissions  int    `json:"totalSubmissions"`
 	RecentSubmissions int    `json:"recentSubmissions"`
+	Blocked           bool   `json:"blocked"`
+	CookieUser        bool   `json:"cookieUser"`
 }
 
 type Leaderboard struct {
@@ -204,7 +206,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	db := openDB()
 	defer db.Close()
 	enableCORS(&w)
-	query := fmt.Sprintf("SELECT * FROM users WHERE username=\"%s\" AND password=\"%s\"", vars["username"], vars["password"])
+	query := fmt.Sprintf("SELECT username FROM users WHERE username=\"%s\" AND password=\"%s\"", vars["username"], vars["password"])
 	res, err := db.Query(query)
 	if err != nil {
 		writeError(&w, err)
@@ -278,7 +280,7 @@ func getLeaderboardHandler(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 	enableCORS(&w)
 	const MaxResult = 5
-	recentQuery := fmt.Sprintf("SELECT id, username, message, recent_submissions FROM users ORDER BY recent_submissions DESC LIMIT %d", MaxResult)
+	recentQuery := fmt.Sprintf("SELECT id, username, message, recent_submissions, cookie_user FROM users ORDER BY recent_submissions DESC LIMIT %d", MaxResult)
 	recentRes, recentErr := db.Query(recentQuery)
 	if recentErr != nil {
 		writeError(&w, recentErr)
@@ -289,7 +291,7 @@ func getLeaderboardHandler(w http.ResponseWriter, r *http.Request) {
 	var leaderboard Leaderboard
 	for recentRes.Next() {
 		var user Login
-		err := recentRes.Scan(&user.ID, &user.Username, &user.Message, &user.RecentSubmissions)
+		err := recentRes.Scan(&user.ID, &user.Username, &user.Message, &user.RecentSubmissions, &user.CookieUser)
 		if err != nil {
 			writeError(&w, err)
 			return
@@ -297,7 +299,7 @@ func getLeaderboardHandler(w http.ResponseWriter, r *http.Request) {
 		leaderboard.Recent = append(leaderboard.Recent, user)
 	}
 
-	totalQuery := fmt.Sprintf("SELECT id, username, message, total_submissions FROM users ORDER BY total_submissions DESC LIMIT %d", MaxResult)
+	totalQuery := fmt.Sprintf("SELECT id, username, message, total_submissions, cookie_user FROM users ORDER BY total_submissions DESC LIMIT %d", MaxResult)
 	totalRes, totalErr := db.Query(totalQuery)
 	if totalErr != nil {
 		writeError(&w, totalErr)
@@ -307,7 +309,7 @@ func getLeaderboardHandler(w http.ResponseWriter, r *http.Request) {
 
 	for totalRes.Next() {
 		var user Login
-		err := totalRes.Scan(&user.ID, &user.Username, &user.Message, &user.TotalSubmissions)
+		err := totalRes.Scan(&user.ID, &user.Username, &user.Message, &user.TotalSubmissions, &user.CookieUser)
 		if err != nil {
 			writeError(&w, err)
 			return

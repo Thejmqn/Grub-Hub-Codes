@@ -14,7 +14,6 @@ export default function Query() {
             setQueryText(res.data[0].code);
         })
         .catch(err => {
-            console.log(err);
             setQueryText("Could not retrieve data: " + err);
         });
     }

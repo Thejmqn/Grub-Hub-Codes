@@ -6,10 +6,11 @@ const RECEIVED = 1;
 const FAILURE = 2;
 
 export default function Leaderboard() {
+    const backend = "https://gh-backend.azurewebsites.net"
     const [leaderboard, setLeaderboard] = useState({status: AWAITING, data: {}});
 
     const getLeaderboard = () => {
-        axios.get("https://gh-backend.azurewebsites.net/leaderboard")
+        axios.get(`${backend}/leaderboard`)
         .then(res => {
             setLeaderboard({status: RECEIVED, data: res.data});
         })
@@ -24,31 +25,32 @@ export default function Leaderboard() {
 
     return (
         <div className="leaderboard">
-        {leaderboard.status == AWAITING ? <p>Leaderboard loading</p> :
-        leaderboard.status == FAILURE ? <p>Failed to get leaderboard</p> :
+        {leaderboard.status === AWAITING ? <p>Leaderboard loading</p> :
+        leaderboard.status === FAILURE ? <p>Failed to get leaderboard</p> :
         <div className="leadeboardList">
             <h2>Recent Leaders:</h2>
-            <ol className="recent">
-                {leaderboard.data.recent.map(user => {
-                    return (
-                    <li key={user.id}>
-                        User: {user.username} (Recent Submissions: {user.recentSubmissions}). Message: "{user.message}"
-                    </li>
-                    );
-                })}
-            </ol>
+            <MapLeaderboard mapType={leaderboard.data.recent} jsonName={"recentSubmissions"} />
             <h2>All-time Leaders:</h2>
-            <ol className="total">
-            {leaderboard.data.total.map(user => {
-                    return (
-                    <li key={user.id}>
-                        User: {user.username} (Total Submissions: {user.totalSubmissions}). Message: "{user.message}"
-                    </li>
-                    );
-                })}
-            </ol>
+            <MapLeaderboard mapType={leaderboard.data.total} jsonName={"totalSubmissions"} />
         </div>
         }
         </div>
+    );
+}
+
+function MapLeaderboard({mapType, jsonName}) {
+    return (
+    <ol className={mapType}>
+        {mapType.map(user => {
+            return (
+            <li key={user.id}>
+                {user.cookieUser ? 
+                `Anonymous User ${user.id} (Submissions: ${user[jsonName]}). Log in to set message.` :
+                `${user.username} (Submissions: ${user[jsonName]}). Message: "${user.message}"`
+                }
+            </li>
+            );
+        })}
+    </ol>
     );
 }

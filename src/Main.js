@@ -5,6 +5,7 @@ import Login from './Login';
 import Restaurants from './restaurants.json';
 import Leaderboard from './Leaderboard';
 import Personalize from './Personalize';
+import SignInInfo from './SignInInfo';
 
 const restaurantRouterArray = () => {
   const restaurantArray = [
@@ -39,6 +40,7 @@ function Home() {
   return (
   <div className="Home">
     <h1>Login:</h1>
+    <SignInInfo />
     <a href={`/login`}>Login/Signup</a>
     <br />
     <a href={`/personalize`}>Personalize your account</a>

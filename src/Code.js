@@ -3,9 +3,16 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 
 export default function Code(props) {
+    const backend = "http://localhost:8080"
     const restaurant = props.restaurant;
     const [inputCode, setInputCode] = useState("");
-    const [outputCode, setOutputCode] = useState({code: null, user: null, timeDif: null});
+    const [outputCode, setOutputCode] = useState({
+        code: null, 
+        username: null,
+        timeDif: null, 
+        cookieUser: null, 
+        id: null
+    });
     const [codeStatus, setCodeStatus] = useState({
         positive: false,
         message: ""
@@ -30,12 +37,20 @@ export default function Code(props) {
             return;
         }
 
-        axios.post(`https://gh-backend.azurewebsites.net/codes/submit/${restaurant.id}/${inputCode}/${username}/${type}`)
+        axios.post(`${backend}/codes/submit/${restaurant.id}/${inputCode}/${username}/${type}`)
         .then(res => {
             setCodeStatus({positive: true, message: "Successfully submit code."});
             setOutputCode({code: inputCode, user: "You!", timeDif: 0});
         })
         .catch(err => {
+            if (!err.response) {
+                setCodeStatus({
+                    positive: false,
+                    message: "Problem connecting to database.",
+                });
+                return;
+            }
+
             if (err.response.status === 400) {
                 switch (err.response.headers.type) {
                 case "INVALID_USERNAME":
@@ -64,10 +79,10 @@ export default function Code(props) {
                     break;
                 }
             } else if (err?.response?.headers?.error) {
-                setCodeStatus({...codeStatus, response: {
+                setCodeStatus({
                     positive: false,
                     message: "500 Internal Server Error: " + err.response.headers.error,
-                }});
+                });
             } else {
                 setCodeStatus({
                     positive: false,
@@ -81,7 +96,7 @@ export default function Code(props) {
         if (e) {
             e.preventDefault();
         }
-        axios.get(`https://gh-backend.azurewebsites.net/codes/get/${restaurant.id}`)
+        axios.get(`${backend}/codes/get/${restaurant.id}`)
         .then(res => {
             if (!res.data) {
                 setCodeStatus({
@@ -105,13 +120,27 @@ export default function Code(props) {
             }
             
             const data = res.data;
-            setOutputCode({code: data.code, user: data.userID, timeDif: timeDifference});
+            setOutputCode({
+                code: data.code, 
+                username: data.username, 
+                timeDif: timeDifference,
+                cookieUser: data.cookieUser,
+                id: data.userID
+            });
             setCodeStatus({
                 positive: true,
                 message: "Updated code.",
             });
         })
         .catch(err => {
+            if (!err.response) {
+                setCodeStatus({
+                    positive: false,
+                    message: "Problem connecting to database.",
+                });
+                return;
+            }
+
             if (err.response.status === 404) {
                 if (err.response.headers.type === "NO_CODES_FOUND") {
                     setCodeStatus({
@@ -120,10 +149,10 @@ export default function Code(props) {
                     });
                 }
             } else if (err?.response?.headers?.error) {
-                setCodeStatus({...codeStatus, response: {
+                setCodeStatus({
                     positive: false,
                     message: "500 Internal Server Error: " + err.response.headers.error,
-                }});
+                });
             } else {
                 setCodeStatus({
                     positive: false,
@@ -148,7 +177,7 @@ export default function Code(props) {
             if (time < restaurant.refreshTime) {
                 setOutputCode({...outputCode, timeDif: time+1});
             } else {
-                setOutputCode({code: null, user: null, timeDif: null});
+                setOutputCode({code: null, username: null, timeDif: null, id: null, cookieUser: null});
             }
         }, refreshTime);
         return () => clearInterval(interval);
@@ -166,7 +195,13 @@ export default function Code(props) {
         />
         <div className="inputCode">
             <h2>Last reported code: {outputCode.code ?? "No recent codes reported."}</h2>
-            {outputCode.user && <p>Code was reported by user "{outputCode.user}" {outputCode.timeDif} seconds ago.</p>}
+            { 
+            outputCode.cookieUser 
+            ? 
+            <p>Code was reported by Anonymous User {outputCode.id} {outputCode.timeDif} seconds ago.</p>
+            :
+            outputCode.id && <p>Code was reported by user "{outputCode.username}" {outputCode.timeDif} seconds ago.</p>
+            }
             <button onClick={getCode}>Update Code</button>
             <p style={codeStatus.positive ? {color: "green"} : {color: "red"}}>{codeStatus.message}</p>
         </div>

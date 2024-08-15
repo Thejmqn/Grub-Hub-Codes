@@ -20,6 +20,8 @@ type Code struct {
 	UserID       int       `json:"userID"`
 	RestaurantID int       `json:"restaurantID"`
 	DateTime     time.Time `json:"dateTime"`
+	Username     string    `json:"username"`
+	CookieUser   bool      `json:"cookieUser"`
 }
 
 type Login struct {
@@ -62,7 +64,9 @@ func getCodeHandler(w http.ResponseWriter, r *http.Request) {
 	enableCORS(&w)
 	db := openDB()
 	defer db.Close()
-	query := fmt.Sprintf("SELECT * FROM codes WHERE restaurant_id=\"%s\" ORDER BY ID DESC LIMIT 1", vars["restaurant_id"])
+	query := fmt.Sprintf("SELECT codes.code, codes.submission_time, users.id, users.username, users.cookie_user FROM codes "+
+		"INNER JOIN users ON users.id=codes.user_id WHERE restaurant_id=\"%s\" "+
+		"ORDER BY submission_time DESC LIMIT 1", vars["restaurant_id"])
 	res, err := db.Query(query)
 	if err != nil {
 		writeError(&w, err)
@@ -72,7 +76,7 @@ func getCodeHandler(w http.ResponseWriter, r *http.Request) {
 
 	var code Code
 	if res.Next() {
-		err := res.Scan(&code.ID, &code.Code, &code.UserID, &code.RestaurantID, &code.DateTime)
+		err := res.Scan(&code.Code, &code.DateTime, &code.UserID, &code.Username, &code.CookieUser)
 		if err != nil {
 			writeError(&w, err)
 			return

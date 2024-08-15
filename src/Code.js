@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 
 export default function Code(props) {
-    const backend = "http://localhost:8080"
+    const backend = "https://gh-backend.azurewebsites.net"
     const restaurant = props.restaurant;
     const [inputCode, setInputCode] = useState("");
     const [outputCode, setOutputCode] = useState({

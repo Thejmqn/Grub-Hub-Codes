@@ -1,3 +1,4 @@
+import BackToHome from "./BackToHome";
 import Code from "./Code";
 import Cookie from "./Cookie";
 import SignInInfo from "./SignInInfo";
@@ -7,7 +8,7 @@ export default function Restaurant(props) {
     return (
     <div className="restaurant">
         <Cookie />
-        <a href="/">Go back to home page</a>
+        <BackToHome />
         <SignInInfo />
         <h1>Welcome to {restaurant.name}</h1>
         <img 

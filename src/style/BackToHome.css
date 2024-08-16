@@ -1,0 +1,19 @@
+/* "Go Back to Home Page" Link Styled as Text */
+.back-to-home a {
+    display: inline-block;
+    margin: 8px 0;
+    color: #ff6700; /* Orange */
+    text-decoration: none;
+    font-weight: bold;
+    padding: 8px 16px;
+    border: 2px solid #ff6700; /* Orange */
+    border-radius: 6px;
+    background-color: #1e1e2f; /* Dark background */
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Hover effect */
+.back-to-home:hover {
+    color: #ff6700; /* Orange text */
+    border-color: #ff6700; /* Maintain orange border */
+}

@@ -1,7 +1,9 @@
+import './style/Login.css';
 import { TextField } from "@mui/material";
 import { useState } from "react";
 import { sha256 } from "js-sha256";
 import axios from "axios";
+import BackToHome from './BackToHome';
 
 export default function Login() {
     const backend = "https://gh-backend.azurewebsites.net";
@@ -172,14 +174,14 @@ export default function Login() {
     }
 
     return (
-    <div className="loginPage">
-        <a href="/">Go back to home page</a>
+    <div className="login-container">
+        <BackToHome />
         <div className="login">
             <h1>Login</h1>
             <p>Username:</p>
             <TextField 
                 id="loginUsername" 
-                label="Username" 
+                type="text"
                 variant="outlined" 
                 value={login.username}
                 onChange={v => setLogin({...login, username: v.target.value})}
@@ -187,7 +189,6 @@ export default function Login() {
             <p>Password:</p>
             <TextField 
                 id="loginPassword" 
-                label="Password" 
                 type="password"
                 variant="outlined" 
                 value={login.password}
@@ -201,7 +202,7 @@ export default function Login() {
             <p>Username:</p>
             <TextField 
                 id="signupUsername" 
-                label="Username" 
+                type="text"
                 variant="outlined" 
                 value={signup.username}
                 onChange={v => setSignup({...signup, username: v.target.value})}
@@ -209,7 +210,6 @@ export default function Login() {
             <p>Password:</p>
             <TextField 
                 id="signupPassword" 
-                label="Password" 
                 variant="outlined"
                 type="password"
                 value={signup.password}
@@ -218,7 +218,6 @@ export default function Login() {
             <p>Confirm Password:</p>
             <TextField 
                 id="signupConfirm" 
-                label="Confirm Password" 
                 type="password"
                 variant="outlined" 
                 value={signup.confirmPassword}
@@ -227,7 +226,6 @@ export default function Login() {
             <p>Leaderboard Message (Optional):</p>
             <TextField 
                 id="leaderboardMessage" 
-                label="Message" 
                 variant="outlined" 
                 value={signup.message}
                 onChange={v => setSignup({...signup, message: v.target.value})}

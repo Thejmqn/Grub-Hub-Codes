@@ -28,9 +28,9 @@ export default function Leaderboard() {
         {leaderboard.status === AWAITING ? <p>Leaderboard loading</p> :
         leaderboard.status === FAILURE ? <p>Failed to get leaderboard</p> :
         <div className="leadeboardList">
-            <h2>Recent Leaders:</h2>
+            <h3>Recent Leaders:</h3>
             <MapLeaderboard mapType={leaderboard.data.recent} jsonName={"recentSubmissions"} />
-            <h2>All-time Leaders:</h2>
+            <h3>All-time Leaders:</h3>
             <MapLeaderboard mapType={leaderboard.data.total} jsonName={"totalSubmissions"} />
         </div>
         }

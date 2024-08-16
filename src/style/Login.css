@@ -1,0 +1,64 @@
+/* General Form Styling */
+.login-container {
+    max-width: 400px;
+    margin: 40px auto;
+    padding: 20px;
+    background-color: #2a2a40;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    border-radius: 12px;
+}
+
+.login-container h2 {
+    font-size: 28px;
+    margin-bottom: 20px;
+    color: #ff6700; /* Orange */
+    text-align: center;
+    border-bottom: 2px solid #002366; /* Navy Blue */
+    padding-bottom: 10px;
+    text-transform: uppercase;
+}
+
+/* Form Fields */
+.login-container input[type="text"],
+.login-container input[type="password"],
+.login-container input[type="email"] {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    background-color: #1e1e2f; /* Dark background */
+    color: #e0e0e0; /* Light text */
+    border: none; /* Remove the border */
+    border-bottom: 2px solid #002366; /* Navy Blue bottom border */
+    border-radius: 0; /* Remove rounded corners */
+    box-sizing: border-box;
+    font-size: 16px;
+    transition: border-color 0.3s ease;
+}
+
+.login-container input[type="text"]:focus,
+.login-container input[type="password"]:focus,
+.login-container input[type="email"]:focus {
+    border-bottom-color: #ff6700; /* Orange when focused */
+    outline: none; /* Remove default outline */
+}
+
+/* Submit Button */
+.login-container button {
+    width: 100%;
+    padding: 12px;
+    margin: 20px 0;
+    background-color: #ff6700; /* Orange */
+    color: #1e1e2f; /* Dark background */
+    border: 2px solid #ff6700; /* Orange border */
+    border-radius: 6px;
+    font-size: 18px;
+    font-weight: bold;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.login-container button:hover {
+    background-color: #ff6700; /* Orange */
+    color: #1e1e2f; /* Dark background */
+}

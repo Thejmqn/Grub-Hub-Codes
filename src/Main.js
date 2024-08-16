@@ -1,4 +1,4 @@
-import './App.css';
+import './style/Main.css';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import Restaurant from './Restaurant';
 import Login from './Login';
@@ -39,25 +39,32 @@ const router = createBrowserRouter(restaurantRouterArray());
 function Home() {
   return (
   <div className="Home">
-    <h1>Login:</h1>
-    <SignInInfo />
-    <a href={`/login`}>Login/Signup</a>
-    <br />
-    <a href={`/personalize`}>Personalize your account</a>
-    <h1>Restaurants:</h1>
-    <ul>
-      {Restaurants.map((restaurant) => {
-        return (
-        <li key={restaurant.id}>
-          <a href={`/restaurants/${restaurant.path}`}>
-            {restaurant.name}
-          </a>
-        </li>
-        );
-      })}
-    </ul>
-    <h1>Leaderboard:</h1>
-    <Leaderboard />
+    <h1>Welcome to UVA Codes</h1>
+    <div className='container'>
+      <div className='login-section'>
+        <h2>Login:</h2>
+        <SignInInfo />
+        <a href={`/personalize`}>Personalize your account</a>
+      </div>
+      <div className='restaurant-section'>
+        <h2>Restaurants:</h2>
+        <ul>
+          {Restaurants.map((restaurant) => {
+            return (
+            <li key={restaurant.id}>
+              <a href={`/restaurants/${restaurant.path}`}>
+                {restaurant.name}
+              </a>
+            </li>
+            );
+          })}
+        </ul>
+      </div>
+      <div className='leaderboard-section'>
+        <h2>Leaderboard:</h2>
+        <Leaderboard />
+      </div>
+    </div>
   </div>
   );
 }

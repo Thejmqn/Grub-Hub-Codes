@@ -8,7 +8,9 @@ body {
 }
 
 /* Container for Sections */
-.container {
+.container,
+.info-container,
+.restaurant {
     max-width: 1200px;
     margin: 20px auto;
     padding: 20px;
@@ -40,11 +42,19 @@ h2 {
     text-transform: uppercase;
 }
 
+h3 {
+    font-size: 20px;
+    margin-bottom: 12px;
+    color: #ff6700; /* Orange */
+    padding-bottom: 8px;
+}
+
 /* Login Section */
 .login-section {
     margin-bottom: 40px;
 }
 
+.info-section a,
 .login-section a {
     display: inline-block;
     margin: 8px 0;

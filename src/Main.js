@@ -6,6 +6,7 @@ import Restaurants from './restaurants.json';
 import Leaderboard from './Leaderboard';
 import Personalize from './Personalize';
 import SignInInfo from './SignInInfo';
+import Info from './Info';
 
 const restaurantRouterArray = () => {
   const restaurantArray = [
@@ -21,6 +22,10 @@ const restaurantRouterArray = () => {
     {
       path: "/personalize",
       element: <Personalize />,
+    },
+    {
+      path: "/info",
+      element: <Info />,
     }
   ];
   Restaurants.forEach(restaurant => {
@@ -41,10 +46,9 @@ function Home() {
   <div className="Home">
     <h1>Welcome to UVA Codes</h1>
     <div className='container'>
-      <div className='login-section'>
-        <h2>Login:</h2>
-        <SignInInfo />
-        <a href={`/personalize`}>Personalize your account</a>
+    <div className='info-section'>
+        <h2>Information:</h2>
+        <a href='/info'>How to Use UVA Codes</a>
       </div>
       <div className='restaurant-section'>
         <h2>Restaurants:</h2>
@@ -59,6 +63,11 @@ function Home() {
             );
           })}
         </ul>
+      </div>
+      <div className='login-section'>
+        <h2>Login:</h2>
+        <SignInInfo />
+        <a href={`/personalize`}>Personalize your account</a>
       </div>
       <div className='leaderboard-section'>
         <h2>Leaderboard:</h2>

@@ -13,7 +13,11 @@ export default function Code(props) {
         cookieUser: null, 
         id: null
     });
-    const [codeStatus, setCodeStatus] = useState({
+    const [codeGetStatus, setCodeGetStatus] = useState({
+        positive: false,
+        message: ""
+    });
+    const [codeSubmitStatus, setCodeSubmitStatus] = useState({
         positive: false,
         message: ""
     })
@@ -30,21 +34,22 @@ export default function Code(props) {
         const username = sessionStorage.getItem("username");
         const type = sessionStorage.getItem("type");
         if (!username) {
-            setCodeStatus({positive: false, message: "Must be signed in to submit a code."});
+            setCodeSubmitStatus({positive: false, message: "Must be signed in to submit a code."});
             return;
         } else if (Number(inputCode) < 1000 || Number(inputCode) > 9999) {
-            setCodeStatus({positive: false, message: "Invalid code. Codes must be 4 digits."});
+            setCodeSubmitStatus({positive: false, message: "Invalid code. Codes must be 4 digits."});
             return;
         }
 
         axios.post(`${backend}/codes/submit/${restaurant.id}/${inputCode}/${username}/${type}`)
         .then(res => {
-            setCodeStatus({positive: true, message: "Successfully submit code."});
+            setCodeSubmitStatus({positive: true, message: "Successfully submit code."});
+            setCodeGetStatus({positive: true, message: ""})
             setOutputCode({code: inputCode, user: "You!", timeDif: 0});
         })
         .catch(err => {
             if (!err.response) {
-                setCodeStatus({
+                setCodeSubmitStatus({
                     positive: false,
                     message: "Problem connecting to database.",
                 });
@@ -54,37 +59,37 @@ export default function Code(props) {
             if (err.response.status === 400) {
                 switch (err.response.headers.type) {
                 case "INVALID_USERNAME":
-                    setCodeStatus({
+                    setCodeSubmitStatus({
                         positive: false,
                         message: "Invalid username submit.",
                     });
                     break;
                 case "INVALID_CODE":
-                    setCodeStatus({
+                    setCodeSubmitStatus({
                         positive: false,
                         message: "Invalid code. Codes must be 4 digits."
                     });
                     break;
                 case "ILLEGAL_RESUBMISSION":
-                    setCodeStatus({
+                    setCodeSubmitStatus({
                         positive: false,
                         message: "Code has already been submit. Please wait until refresh."
                     });
                     break;
                 default:
-                    setCodeStatus({
+                    setCodeSubmitStatus({
                         positive: false,
                         message: "An error occured while submitting: " + err.response.headers.type
                     });
                     break;
                 }
             } else if (err?.response?.headers?.error) {
-                setCodeStatus({
+                setCodeSubmitStatus({
                     positive: false,
                     message: "500 Internal Server Error: " + err.response.headers.error,
                 });
             } else {
-                setCodeStatus({
+                setCodeSubmitStatus({
                     positive: false,
                     message: "An unknown error occurred.",
                 });
@@ -99,7 +104,7 @@ export default function Code(props) {
         axios.get(`${backend}/codes/get/${restaurant.id}`)
         .then(res => {
             if (!res.data) {
-                setCodeStatus({
+                setCodeGetStatus({
                     positive: false,
                     message: "No valid codes found.",
                 });
@@ -112,7 +117,7 @@ export default function Code(props) {
             const timeDifference = Math.floor((currentTime - sendTime - timeZoneOffset) / 1000);
 
             if (timeDifference > restaurant.refreshTime) {
-                setCodeStatus({
+                setCodeGetStatus({
                     positive: false,
                     message: `No code has been reported since the last code refresh.`,
                 });
@@ -127,14 +132,14 @@ export default function Code(props) {
                 cookieUser: data.cookieUser,
                 id: data.userID
             });
-            setCodeStatus({
+            setCodeGetStatus({
                 positive: true,
-                message: "Updated code.",
+                message: "Successfully updated code.",
             });
         })
         .catch(err => {
             if (!err.response) {
-                setCodeStatus({
+                setCodeGetStatus({
                     positive: false,
                     message: "Problem connecting to database.",
                 });
@@ -143,18 +148,18 @@ export default function Code(props) {
 
             if (err.response.status === 404) {
                 if (err.response.headers.type === "NO_CODES_FOUND") {
-                    setCodeStatus({
+                    setCodeGetStatus({
                         positive: false,
                         message: "No valid codes found.",
                     });
                 }
             } else if (err?.response?.headers?.error) {
-                setCodeStatus({
+                setCodeGetStatus({
                     positive: false,
                     message: "500 Internal Server Error: " + err.response.headers.error,
                 });
             } else {
-                setCodeStatus({
+                setCodeGetStatus({
                     positive: false,
                     message: "An unknown error occurred.",
                 });
@@ -184,17 +189,9 @@ export default function Code(props) {
     }, [outputCode]);
 
     return (
-    <div className="code">
-        <TextField 
-            id="submitCode" 
-            label="Submit a Code" 
-            variant="outlined"
-            type="number"
-            value={inputCode}
-            onChange={v => updateCode(v)}
-        />
-        <div className="inputCode">
-            <h2>Last reported code: {outputCode.code ?? "No recent codes reported."}</h2>
+    <div className="code-container">
+        <div className="code-get">
+            <h2>Last reported code: {outputCode.code ?? "None"}</h2>
             { 
             outputCode.cookieUser 
             ? 
@@ -202,10 +199,29 @@ export default function Code(props) {
             :
             outputCode.id && <p>Code was reported by user "{outputCode.username}" {outputCode.timeDif} seconds ago.</p>
             }
-            <button onClick={getCode}>Update Code</button>
-            <p style={codeStatus.positive ? {color: "green"} : {color: "red"}}>{codeStatus.message}</p>
+            <p style={codeGetStatus.positive ? {color: "green"} : {color: "red"}}>{codeGetStatus.message}</p>
+            <div className="code-buttons">
+                <button className="code-buttons" onClick={getCode}>Update Code</button>
+            </div>
         </div>
-        <button onClick={submitCode}>Submit</button>
+        <div className="code-submit">
+            <h2>Code Submissions:</h2>
+            <div className="submission-box">
+                <p>Submit a Code:</p>
+                <TextField 
+                    id="submitCode" 
+                    variant="outlined"
+                    size="large"
+                    type="number"
+                    value={inputCode}
+                    onChange={v => updateCode(v)}
+                />
+            </div>
+            <p style={codeSubmitStatus.positive ? {color: "green"} : {color: "red"}}>{codeSubmitStatus.message}</p>
+            <div className="code-buttons">
+                <button onClick={submitCode}>Submit Code</button>
+            </div>
+        </div>
     </div>
     );
 }

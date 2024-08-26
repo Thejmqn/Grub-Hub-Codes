@@ -1,7 +1,9 @@
+import './style/Login.css';
 import {useState} from "react";
 import axios from "axios";
 import {TextField} from "@mui/material";
 import { sha256 } from "js-sha256";
+import BackToHome from './BackToHome';
 
 export default function Personalize() {
     const backend = "https://gh-backend.azurewebsites.net";
@@ -136,14 +138,13 @@ export default function Personalize() {
     }
 
     return (
-        <div className="personalize">
-            <a href="/">Go back to home page</a>
+        <div className="login-container">
+            <BackToHome />
             <h1>Personalize Account</h1>
             <h2>Change Message:</h2>
             <p>Username:</p>
             <TextField
                 id="messageUsername"
-                label="Username"
                 variant="outlined"
                 value={message.username}
                 onChange={v => setMessage({...message, username: v.target.value})}
@@ -151,7 +152,6 @@ export default function Personalize() {
             <p>Password:</p>
             <TextField
                 id="messagePasword"
-                label="Password"
                 variant="outlined"
                 type="password"
                 value={message.password}
@@ -160,7 +160,6 @@ export default function Personalize() {
             <p>New Message:</p>
             <TextField
                 id="messageMessage"
-                label="New Message"
                 variant="outlined"
                 value={message.newMessage}
                 onChange={v => setMessage({...message, newMessage: v.target.value})}
@@ -171,7 +170,6 @@ export default function Personalize() {
             <p>Username:</p>
             <TextField
                 id="passwordUsername"
-                label="Username"
                 variant="outlined"
                 value={password.username}
                 onChange={v => setPassword({...password, username: v.target.value})}
@@ -179,7 +177,6 @@ export default function Personalize() {
             <p>Old Password:</p>
             <TextField
                 id="passwordOld"
-                label="Old Password"
                 variant="outlined"
                 type="password"
                 value={password.oldPassword}
@@ -188,7 +185,6 @@ export default function Personalize() {
             <p>New Password:</p>
             <TextField
                 id="passwordNew"
-                label="New Password"
                 variant="outlined"
                 type="password"
                 value={password.newPassword}

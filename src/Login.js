@@ -1,12 +1,11 @@
 import './style/Login.css';
 import { TextField } from "@mui/material";
 import { useState } from "react";
-import { sha256 } from "js-sha256";
 import axios from "axios";
 import BackToHome from './BackToHome';
 
 export default function Login() {
-    const backend = "https://gh-backend.azurewebsites.net";
+    const backend = "http://localhost:8080";
     const [login, setLogin] = useState({
         username: "",
         password: "",
@@ -44,8 +43,7 @@ export default function Login() {
             return;
         }
 
-        const passwordHash = sha256(password);
-        axios.post(`${backend}/login/${username}/${passwordHash}`)
+        axios.post(`${backend}/login/${username}/${password}`)
         .then(res => {
             setLogin({...login, response: {
                 positive: true,
@@ -106,8 +104,7 @@ export default function Login() {
             return;
         }
 
-        const passwordHash = sha256(password);
-        axios.post(`${backend}/signup/${username}/${passwordHash}/${message}`)
+        axios.post(`${backend}/signup/${username}/${password}/${message}`)
         .then(res => {
             setSignup({...signup, response: {
                 positive: true,
@@ -145,7 +142,7 @@ export default function Login() {
                 break;
                 }
             } else if (err?.response?.headers?.error) {
-                setLogin({...login, response: {
+                setSignup({...signup, response: {
                     positive: false,
                     message: "500 Internal Server Error: " + err.response.headers.error,
                 }});

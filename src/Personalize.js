@@ -2,7 +2,6 @@ import './style/Login.css';
 import {useState} from "react";
 import axios from "axios";
 import {TextField} from "@mui/material";
-import { sha256 } from "js-sha256";
 import BackToHome from './BackToHome';
 
 export default function Personalize() {
@@ -28,8 +27,7 @@ export default function Personalize() {
 
     const changeMessage = () => {
         const m = message;
-        const passwordHash = sha256(m.password);
-        axios.post(`${backend}/change/message/${m.username}/${passwordHash}/${m.newMessage}`)
+        axios.post(`${backend}/change/message/${m.username}/${m.password}/${m.newMessage}`)
         .then(res => {
             setMessage({...message, response: {
                 positive: true,
@@ -76,9 +74,7 @@ export default function Personalize() {
 
     const changePassword = () => {
         const p = password;
-        const oldHash = sha256(p.oldPassword);
-        const newHash = sha256(p.newPassword);
-        if (oldHash === newHash) {
+        if (p.oldPassword === p.newPassword) {
             setPassword({...password, response: {
                 positive: false,
                 message: "Old password cannot be same as new password.",
@@ -86,7 +82,7 @@ export default function Personalize() {
             return;
         }
 
-        axios.post(`${backend}/change/password/${p.username}/${oldHash}/${newHash}`)
+        axios.post(`${backend}/change/password/${p.username}/${p.oldPassword}/${p.newPassword}`)
         .then(res => {
             setPassword({...password, response: {
                 positive: true,

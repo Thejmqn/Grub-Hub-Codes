@@ -1,7 +1,9 @@
 package main
 
 import (
+	"crypto/sha256"
 	"database/sql"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -210,7 +212,9 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	db := openDB()
 	defer db.Close()
 	enableCORS(&w)
-	query := fmt.Sprintf("SELECT username FROM users WHERE username=\"%s\" AND password=\"%s\"", vars["username"], vars["password"])
+
+	hash := hashString(vars["password"])
+	query := fmt.Sprintf("SELECT username FROM users WHERE username=\"%s\" AND password=\"%s\"", vars["username"], hash)
 	res, err := db.Query(query)
 	if err != nil {
 		writeError(&w, err)
@@ -269,8 +273,10 @@ func signupHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	hash := hashString(vars["password"])
+	fmt.Println(hash)
 	query := fmt.Sprintf("INSERT INTO users (`username`, `password`, `message`, `cookie_user`) VALUES (\"%s\", \"%s\", \"%s\", \"%d\")",
-		vars["username"], vars["password"], vars["message"], 0)
+		vars["username"], hash, vars["message"], 0)
 	res, err := db.Query(query)
 	if err != nil {
 		writeError(&w, err)
@@ -335,8 +341,9 @@ func changeMessageHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	enableCORS(&w)
 
+	hash := hashString(vars["password"])
 	query := fmt.Sprintf("UPDATE users SET message=\"%s\" WHERE username=\"%s\" AND password=\"%s\"",
-		vars["newMessage"], vars["username"], vars["password"])
+		vars["newMessage"], vars["username"], hash)
 	res, err := db.Exec(query)
 	if err != nil {
 		writeError(&w, err)
@@ -370,8 +377,10 @@ func changePasswordHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	newHash := hashString(vars["newPassword"])
+	oldHash := hashString(vars["oldPassword"])
 	query := fmt.Sprintf("UPDATE users SET password=\"%s\" WHERE username=\"%s\" AND password=\"%s\"",
-		vars["newPassword"], vars["username"], vars["oldPassword"])
+		newHash, vars["username"], oldHash)
 	res, err := db.Exec(query)
 	if err != nil {
 		writeError(&w, err)
@@ -400,6 +409,12 @@ func writeError(w *http.ResponseWriter, err error) {
 	(*w).Header().Set("Error", err.Error())
 	(*w).Header().Set("Access-Control-Expose-Headers", "Error")
 	(*w).WriteHeader(http.StatusInternalServerError)
+}
+
+func hashString(raw string) string {
+	salt := raw + os.Getenv("GH_SALT")
+	hash := sha256.Sum256([]byte(salt + raw))
+	return hex.EncodeToString(hash[:])
 }
 
 func openDB() *sql.DB {

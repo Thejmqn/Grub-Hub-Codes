@@ -5,7 +5,7 @@ import axios from "axios";
 import BackToHome from './BackToHome';
 
 export default function Login() {
-    const backend = "http://localhost:8080";
+    const backend = "https://gh-backend.azurewebsites.net";
     const [login, setLogin] = useState({
         username: "",
         password: "",

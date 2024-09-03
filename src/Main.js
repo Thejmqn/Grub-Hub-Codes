@@ -46,10 +46,6 @@ function Home() {
   <div className="Home">
     <h1>Welcome to UVA Codes</h1>
     <div className='container'>
-    <div className='info-section'>
-        <h2>Information:</h2>
-        <a href='/info'>How to Use UVA Codes</a>
-      </div>
       <div className='restaurant-section'>
         <h2>Restaurants:</h2>
         <ul>
@@ -68,6 +64,14 @@ function Home() {
         <h2>Login:</h2>
         <SignInInfo />
         <a href={`/personalize`}>Personalize your account</a>
+      </div>
+      <div className='info-section'>
+        <h2>Information:</h2>
+        <img className='info-banner'
+          src='banners/UVACodesExplain.png'
+          alt='An explanation of the UVA Codes website.'
+        />
+        <a href='/info'>How to Use UVA Codes</a>
       </div>
       <div className='leaderboard-section'>
         <h2>Leaderboard:</h2>

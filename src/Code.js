@@ -36,7 +36,7 @@ export default function Code(props) {
         if (!username) {
             setCodeSubmitStatus({positive: false, message: "Must be signed in to submit a code."});
             return;
-        } else if (Number(inputCode) < 1000 || Number(inputCode) > 9999) {
+        } else if (inputCode.length !== 4 || Number(inputCode) > 9999) {
             setCodeSubmitStatus({positive: false, message: "Invalid code. Codes must be 4 digits."});
             return;
         }

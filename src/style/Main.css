@@ -136,3 +136,13 @@ h3 {
 .leaderboard-section li a:hover {
     color: #ff6700; /* Orange */
 }
+
+/* Banner Image */
+.info-banner {
+    width: 100%;
+    max-height: 400px;
+    object-fit: cover;
+    border-radius: 12px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}

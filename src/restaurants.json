@@ -5,7 +5,7 @@
         "path": "chic-fil-a",
         "banner": "ChickFilABanner.jpg",
         "location": "https://www.openstreetmap.org/node/6879655085",
-        "refreshTime": 60
+        "refreshTime": 30
     },
     {
         "id": 2,
@@ -13,7 +13,7 @@
         "path": "west-range",
         "banner": "WestRangeCafeBanner.jpg",
         "location": "https://www.openstreetmap.org/node/3499497265",
-        "refreshTime": 60
+        "refreshTime": 30
     },
     {
         "id": 3,

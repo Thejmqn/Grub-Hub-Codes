@@ -11,7 +11,8 @@ import (
 )
 
 func enableCORS(w *http.ResponseWriter) {
-	(*w).Header().Set("Access-Control-Allow-Origin", "*")
+	const host = "https://www.uvacodes.com"
+	(*w).Header().Set("Access-Control-Allow-Origin", host)
 }
 
 func writeError(w *http.ResponseWriter, err error) {
